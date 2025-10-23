@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-express
+  namespace: samia-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+      - name: mongo-express
+        image: mongo-express:1.0.0   # official image tag may vary; use mongo-express OR use dockerhub version
+        ports:
+          - containerPort: 8081
+        env:
+          - name: ME_CONFIG_MONGODB_SERVER
+            value: "mongo"    # Kubernetes service name for Mongo
+          - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ostad-secret
+                key: MONGO_INITDB_ROOT_USERNAME
+          - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ostad-secret
+                key: MONGO_INITDB_ROOT_PASSWORD
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-express
+  namespace: samia-ns
+spec:
+  selector:
+    app: mongo-express
+  ports:
+    - port: 80
+      targetPort: 8081
+  # expose via NodePort so you can access if needed, but Ingress is optional for subdomain
+  type: ClusterIP
+

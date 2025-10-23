@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ostad-ingress
+  namespace: samia-ns
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # If you want to enable path rewrites or other features, add annotations here
+spec:
+  rules:
+    - host: chat.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ostad-ui
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ostad-server
+                port:
+                  number: 8080
+    - host: mongo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mongo-express
+                port:
+                  number: 80
+

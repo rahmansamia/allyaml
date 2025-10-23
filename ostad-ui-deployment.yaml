@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-ui
+  namespace: samia-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-ui
+  template:
+    metadata:
+      labels:
+        app: ostad-ui
+    spec:
+      containers:
+      - name: ostad-ui
+        image: ostad-ui:local
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5173
+        env:
+          - name: VITE_SERVER_URL
+            valueFrom:
+              configMapKeyRef:
+                name: ostad-config
+                key: VITE_SERVER_URL
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "300m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ostad-ui
+  namespace: samia-ns
+spec:
+  type: NodePort
+  selector:
+    app: ostad-ui
+  ports:
+    - port: 80
+      targetPort: 5173
+      nodePort: 30080
+

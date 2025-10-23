@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ostad-server
+  namespace: samia-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ostad-server
+  template:
+    metadata:
+      labels:
+        app: ostad-server
+    spec:
+      containers:
+      - name: ostad-server
+        # if you built locally in minikube, use this image name (see build steps)
+        image: ostad-server:local
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8080
+        env:
+          - name: PORT
+            valueFrom:
+              configMapKeyRef:
+                name: ostad-config
+                key: BACKEND_PORT
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ostad-secret
+                key: MONGO_INITDB_ROOT_USERNAME
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ostad-secret
+                key: MONGO_INITDB_ROOT_PASSWORD
+          - name: MONGO_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: ostad-secret
+                key: MONGO_DB_NAME
+          - name: MONGO_URI
+            value: "mongodb://admin:adminpassword@mongo:27017/chatdb?authSource=admin"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ostad-server
+  namespace: samia-ns
+spec:
+  selector:
+    app: ostad-server
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+

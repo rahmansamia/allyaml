@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ostad-config
+  namespace: samia-ns
+data:
+  # adjust the keys to match the backend/frontend expected names
+  FRONTEND_PORT: "5173"
+  BACKEND_PORT: "8080"
+  # for frontend to reach backend via Ingress host
+  VITE_SERVER_URL: "http://chat.local/api"
+
